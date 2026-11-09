@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="BookRentalSystem.Business/BookRentalSystem.Business.csproj" />
+  <Project Path="BookRentalSystem.DataAccess/BookRentalSystem.DataAccess.csproj" />
+  <Project Path="BookRentalSystem.Presentation/BookRentalSystem.Presentation.csproj" />
+</Solution>

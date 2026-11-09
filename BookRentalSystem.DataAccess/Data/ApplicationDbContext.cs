@@ -1,0 +1,23 @@
+﻿using BookRentalSystem.DataAccess.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace BookRentalSystem.DataAccess.Data
+{
+    public class LibraryDbContext : IdentityDbContext<ApplicationUser> 
+    {
+        public LibraryDbContext(DbContextOptions<LibraryDbContext> options) : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            builder.ApplyConfigurationsFromAssembly(typeof(LibraryDbContext).Assembly);
+        }
+
+    }
+}
