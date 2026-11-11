@@ -11,11 +11,18 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<LibraryDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddIdentityCore<ApplicationUser>()
+builder.Services.AddIdentityCore<IdentityUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<LibraryDbContext>();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    await DataSeeder.SeedAsync(services);
+}
 
 if (app.Environment.IsDevelopment())
 {

@@ -1,4 +1,5 @@
 ﻿using BookRentalSystem.DataAccess.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -7,7 +8,7 @@ using System.Text;
 
 namespace BookRentalSystem.DataAccess.Data
 {
-    public class LibraryDbContext : IdentityDbContext<ApplicationUser> 
+    public class LibraryDbContext : IdentityDbContext<IdentityUser> 
     {
         public LibraryDbContext(DbContextOptions<LibraryDbContext> options) : base(options)
         {
