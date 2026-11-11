@@ -1,7 +1,9 @@
-using Microsoft.EntityFrameworkCore;
+using BookRentalSystem.Business.Mapping;
+using BookRentalSystem.Business.Services;
 using BookRentalSystem.DataAccess.Data;
-using BookRentalSystem.DataAccess.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,9 +13,15 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddDbContext<LibraryDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddAutoMapper(cfg => { },
+    typeof(AuthenticationProfile).Assembly);
+
 builder.Services.AddIdentityCore<IdentityUser>()
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<LibraryDbContext>();
+
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 var app = builder.Build();
 
@@ -27,17 +35,8 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapGet("/openapi/contract.yaml", async context =>
-    {
-        context.Response.ContentType = "application/yaml";
-        await context.Response.SendFileAsync(
-            Path.Combine(app.Environment.ContentRootPath, "OpenApi", "book-rental-api-contract.yaml"));
-    });
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/openapi/contract.yaml", "Book Rental System API Contract");
-        options.RoutePrefix = "swagger";
-    });
+    app.MapScalarApiReference();
+
 }
 
 app.UseHttpsRedirection();
