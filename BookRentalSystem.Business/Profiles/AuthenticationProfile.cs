@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using BookRentalSystem.Business.DTOs;
 using Microsoft.AspNetCore.Identity;
 using System;
@@ -13,7 +13,7 @@ namespace BookRentalSystem.Business.Mapping
         public AuthenticationProfile()
         {
             CreateMap<RegisterUserDto, IdentityUser>();
-            CreateMap<IdentityUser, ResponseUserDto>();
+            CreateMap<IdentityUser, UserResponseDto>();
         }
     }
 }

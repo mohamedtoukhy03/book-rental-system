@@ -14,6 +14,8 @@ namespace BookRentalSystem.DataAccess.Data
         {
         }
 
+        public DbSet<Book> Books => Set<Book>();
+        public DbSet<RentalRequest> RentalRequests => Set<RentalRequest>();
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
