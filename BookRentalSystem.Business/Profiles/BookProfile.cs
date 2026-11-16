@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace BookRentalSystem.Business.Mappers
+namespace BookRentalSystem.Business.Profiles
 {
     public class BookProfile : Profile
     {

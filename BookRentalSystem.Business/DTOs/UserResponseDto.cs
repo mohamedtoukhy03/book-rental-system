@@ -1,6 +1,6 @@
 ﻿namespace BookRentalSystem.Business.DTOs
 {
-    public class UserResponseDto
+    public record UserResponseDto
     {
         public required string Id { get; init; }
         public required string UserName { get; init; }

@@ -7,12 +7,11 @@ namespace BookRentalSystem.DataAccess.Repositories
 {
     public interface IBookRepository
     {
-        public Task AddAsync(Book book);
-        public Task<Book?> GetByIdAsync(Guid id);
-        public Task<Book?> GetByIdWithLockAsync(Guid id);
-        public Task<IEnumerable<Book>> GetAllAsync();
-        public Task<IEnumerable<Book>> GetAvailableBooksAsync();
-        public Task<bool> ExistsByIsbnAsync(string isbn);
-        public Task SaveChangesAsync();
+        Task AddAsync(Book book);
+        Task<Book?> GetByIdAsync(Guid id);
+        Task<Book?> GetByIdWithLockAsync(Guid id);
+        Task<IEnumerable<Book>> GetAllAsync();
+        Task<IEnumerable<Book>> GetAvailableBooksAsync();
+        Task<bool> ExistsByIsbnAsync(string isbn);
     }
 }

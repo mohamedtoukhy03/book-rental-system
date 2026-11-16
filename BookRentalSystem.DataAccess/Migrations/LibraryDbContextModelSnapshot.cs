@@ -30,7 +30,8 @@ namespace BookRentalSystem.DataAccess.Migrations
 
                     b.Property<string>("Author")
                         .IsRequired()
-                        .HasColumnType("varchar(100)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<int>("AvailableCopies")
                         .IsConcurrencyToken()
@@ -38,11 +39,13 @@ namespace BookRentalSystem.DataAccess.Migrations
 
                     b.Property<string>("ISBN")
                         .IsRequired()
-                        .HasColumnType("varchar(20)");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("varchar(200)");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<int>("TotalCopies")
                         .HasColumnType("integer");

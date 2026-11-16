@@ -1,5 +1,5 @@
-using BookRentalSystem.Business.Mapping;
 using BookRentalSystem.Business.Options;
+using BookRentalSystem.Business.Profiles;
 using BookRentalSystem.Business.Services;
 using BookRentalSystem.DataAccess.Data;
 using BookRentalSystem.DataAccess.Models;
@@ -23,12 +23,16 @@ builder.Services.AddDbContext<LibraryDbContext>(options =>
 
 builder.Services.AddAutoMapper(cfg => { }, typeof(AuthenticationProfile).Assembly);
 
-builder.Services.AddIdentityCore<IdentityUser>()
+builder.Services.AddIdentityCore<IdentityUser>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+    })
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<LibraryDbContext>();
 
 builder.Services.AddScoped<IBookRepository, EfBook>();
 builder.Services.AddScoped<IRentalRequestRepository, EfRentalRequest>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IBookService, BookService>();

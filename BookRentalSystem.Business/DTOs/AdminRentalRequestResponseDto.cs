@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BookRentalSystem.Business.DTOs
 {
-    public class AdminRentalRequestResponseDto
+    public record AdminRentalRequestResponseDto
     {
         public Guid Id { get; init; }
         public required string Status { get; init; }

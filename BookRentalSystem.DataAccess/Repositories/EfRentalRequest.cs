@@ -1,7 +1,6 @@
 using BookRentalSystem.DataAccess.Data;
 using BookRentalSystem.DataAccess.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +13,6 @@ namespace BookRentalSystem.DataAccess.Repositories
         public async Task AddAsync(RentalRequest rentalRequest)
         {
             await _dbContext.RentalRequests.AddAsync(rentalRequest);
-        }
-
-        public async Task<IEnumerable<RentalRequest>> GetAllAsync()
-        {
-            var rentalRequests = await _dbContext.RentalRequests
-                .Include(r => r.Book)
-                .Include(r => r.User)
-                .ToListAsync();
-            return rentalRequests;
         }
 
         public async Task<RentalRequest?> GetByIdAsync(Guid id)
@@ -65,16 +55,6 @@ namespace BookRentalSystem.DataAccess.Repositories
                 && r.Status == RentalRequestStatus.Pending
             );
             return hasPendingRequest;
-        }
-
-        public async Task SaveChangesAsync()
-        {
-            await _dbContext.SaveChangesAsync();
-        }
-
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
-        {
-            return await _dbContext.Database.BeginTransactionAsync();
         }
     }
 }

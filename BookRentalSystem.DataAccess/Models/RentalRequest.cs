@@ -11,8 +11,8 @@ namespace BookRentalSystem.DataAccess.Models
         public string? ReviewedByUserId { get; set; }
         public RentalRequestStatus Status { get; set; } = RentalRequestStatus.Pending;
         public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
-        public Book Book { get; set; } = null!;
-        public IdentityUser User { get; set; } = null!;
+        public Book? Book { get; set; }
+        public IdentityUser? User { get; set; }
         public IdentityUser? Admin { get; set; }
     }
 }

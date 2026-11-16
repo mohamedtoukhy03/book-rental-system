@@ -49,10 +49,5 @@ namespace BookRentalSystem.DataAccess.Repositories
             var exists = await _dbContext.Books.AnyAsync(b => b.ISBN == isbn);
             return exists;
         }
-
-        public async Task SaveChangesAsync()
-        {
-            await _dbContext.SaveChangesAsync();
-        }
     }
 }

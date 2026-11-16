@@ -1,6 +1,6 @@
 namespace BookRentalSystem.Business.DTOs;
 
-public class LoginResponseDto
+public record LoginResponseDto
 {
     public required string AccessToken { get; init; }
     public required DateTimeOffset ExpiresAt { get; init; }

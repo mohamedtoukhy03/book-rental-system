@@ -12,16 +12,17 @@ namespace BookRentalSystem.Business.Services
     public class RentalRequestService(
         IRentalRequestRepository _rentalRequestRepository,
         IBookRepository _bookRepository,
+        IUnitOfWork _unitOfWork,
         IMapper _mapper) : IRentalRequestService
     {
         public async Task<RentalRequestResponseDto> CreateRequestAsync(string? userId, CreateRentalRequestDto createRentalRequestDto)
         {
             if (string.IsNullOrEmpty(userId))
             {
-                throw new UnauthorizedAccessException("User is not authenticated.");
+                throw new UnauthorizedException("User is not authenticated.");
             }
 
-            await using var transaction = await _rentalRequestRepository.BeginTransactionAsync();
+            await using var transaction = await _unitOfWork.BeginTransactionAsync();
             try
             {
                 var book = await _bookRepository.GetByIdWithLockAsync(createRentalRequestDto.BookId);
@@ -41,18 +42,19 @@ namespace BookRentalSystem.Business.Services
                     throw new ConflictException("You already have a pending rental request for this book.");
                 }
 
+                book.AvailableCopies -= 1;
+
                 var rentalRequest = new RentalRequest
                 {
                     Id = Guid.NewGuid(),
                     UserId = userId,
                     BookId = createRentalRequestDto.BookId,
                     Status = RentalRequestStatus.Pending,
-                    RequestedAt = DateTime.UtcNow,
                     Book = book
                 };
 
                 await _rentalRequestRepository.AddAsync(rentalRequest);
-                await _rentalRequestRepository.SaveChangesAsync();
+                await _unitOfWork.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 return _mapper.Map<RentalRequestResponseDto>(rentalRequest);
@@ -74,7 +76,7 @@ namespace BookRentalSystem.Business.Services
         {
             if (string.IsNullOrEmpty(adminUserId))
             {
-                throw new UnauthorizedAccessException("Admin is not authenticated.");
+                throw new UnauthorizedException("Admin is not authenticated.");
             }
 
             var request = await _rentalRequestRepository.GetByIdAsync(requestId);
@@ -88,22 +90,10 @@ namespace BookRentalSystem.Business.Services
                 throw new BadRequestException($"Cannot approve request that is already {request.Status}.");
             }
 
-            var book = request.Book;
-            if (book == null)
-            {
-                throw new NotFoundException("Associated book not found.");
-            }
-
-            if (book.AvailableCopies <= 0)
-            {
-                throw new BadRequestException("Approval blocked: no copies remain for this book.");
-            }
-
-            book.AvailableCopies -= 1;
             request.Status = RentalRequestStatus.Approved;
             request.ReviewedByUserId = adminUserId;
 
-            await _rentalRequestRepository.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<RentalRequestResponseDto>(request);
         }
@@ -112,7 +102,7 @@ namespace BookRentalSystem.Business.Services
         {
             if (string.IsNullOrEmpty(adminUserId))
             {
-                throw new UnauthorizedAccessException("Admin is not authenticated.");
+                throw new UnauthorizedException("Admin is not authenticated.");
             }
 
             var request = await _rentalRequestRepository.GetByIdAsync(requestId);
@@ -126,10 +116,17 @@ namespace BookRentalSystem.Business.Services
                 throw new BadRequestException($"Cannot reject request that is already {request.Status}.");
             }
 
+            var book = request.Book;
+            if (book == null)
+            {
+                throw new NotFoundException("Associated book not found.");
+            }
+
+            book.AvailableCopies += 1;
             request.Status = RentalRequestStatus.Rejected;
             request.ReviewedByUserId = adminUserId;
 
-            await _rentalRequestRepository.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<RentalRequestResponseDto>(request);
         }
@@ -138,7 +135,7 @@ namespace BookRentalSystem.Business.Services
         {
             if (string.IsNullOrEmpty(userId))
             {
-                throw new UnauthorizedAccessException("User is not authenticated.");
+                throw new UnauthorizedException("User is not authenticated.");
             }
 
             var requests = await _rentalRequestRepository.GetUserRequestsAsync(userId);

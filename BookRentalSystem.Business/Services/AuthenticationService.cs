@@ -2,8 +2,8 @@ using AutoMapper;
 using BookRentalSystem.Business.DTOs;
 using BookRentalSystem.Business.Exceptions;
 using BookRentalSystem.Business.Options;
-using BookRentalSystem.DataAccess.Data;
 using BookRentalSystem.DataAccess.Models;
+using BookRentalSystem.DataAccess.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -20,7 +20,7 @@ namespace BookRentalSystem.Business.Services
     public class AuthenticationService(
         UserManager<IdentityUser> userManager,
         IMapper mapper, 
-        LibraryDbContext dbContext,
+        IUnitOfWork unitOfWork,
         IOptions<JwtOptions> jwtOptions
         ) : IAuthenticationService
     {
@@ -29,26 +29,27 @@ namespace BookRentalSystem.Business.Services
             var user = await userManager.FindByEmailAsync(loginUserDto.Email);
             if (user == null)
             {
-                throw new BadRequestException("Invalid email or password.");
+                throw new UnauthorizedException("Invalid email or password.");
             }
 
             var checkPassword = await userManager.CheckPasswordAsync(user, loginUserDto.Password);
             if (!checkPassword)
             {
-                throw new BadRequestException("Invalid email or password.");
-            }  
+                throw new UnauthorizedException("Invalid email or password.");
+            }
 
             var roles = await userManager.GetRolesAsync(user);
-            var role = roles.FirstOrDefault();
-            if (role == null)
+            if (roles.Count == 0)
             {
-                throw new NotFoundException("User has no assigned role.");
+                throw new ForbiddenException("User has no assigned role.");
             }
+
+            var expiresAt = DateTimeOffset.UtcNow.AddMinutes(jwtOptions.Value.ExpiresInMinutes);
 
             return new LoginResponseDto
             {
-                AccessToken = GenerateToken(user, role),
-                ExpiresAt = DateTime.UtcNow.AddMinutes(jwtOptions.Value.ExpiresInMinutes),
+                AccessToken = GenerateToken(user, roles, expiresAt),
+                ExpiresAt = expiresAt,
                 User = mapper.Map<UserResponseDto>(user)
             };
         }
@@ -65,14 +66,14 @@ namespace BookRentalSystem.Business.Services
             return mapper.Map<UserResponseDto>(user);
         }
 
-        private string GenerateToken(IdentityUser user, string? role)
+        private string GenerateToken(IdentityUser user, IList<string> roles, DateTimeOffset expiresAt)
         {
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, user.Id),
-                new(JwtRegisteredClaimNames.Email, user.Email!),
-                new(ClaimTypes.Role, role!)
+                new(JwtRegisteredClaimNames.Email, user.Email!)
             };
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtOptions.Value.Key));
@@ -84,8 +85,7 @@ namespace BookRentalSystem.Business.Services
                 issuer: jwtOptions.Value.Issuer,
                 audience: jwtOptions.Value.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(
-                    jwtOptions.Value.ExpiresInMinutes),
+                expires: expiresAt.UtcDateTime,
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -94,22 +94,19 @@ namespace BookRentalSystem.Business.Services
         private async Task<IdentityUser> RegisterLogicAsync(RegisterUserDto registerUserDto, string role)
         {
             var user = mapper.Map<IdentityUser>(registerUserDto);
-            await using var transaction =
-                await dbContext.Database.BeginTransactionAsync();
+            await using var transaction = await unitOfWork.BeginTransactionAsync();
             try
             {
                 var result = await userManager.CreateAsync(user, registerUserDto.Password);
                 if (!result.Succeeded)
                 {
-                    throw new BadRequestException(
-                        string.Join(", ", result.Errors.Select(e => e.Description)));
+                    throw new BadRequestException("Registration failed. Please check your username, email and password.");
                 }
 
                 var roleResult = await userManager.AddToRoleAsync(user, role);
                 if (!roleResult.Succeeded)
                 {
-                    throw new BadRequestException(
-                        string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                    throw new BadRequestException("Failed to assign a role to the user.");
                 }
 
                 await transaction.CommitAsync();

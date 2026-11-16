@@ -1,9 +1,9 @@
-﻿using BookRentalSystem.DataAccess.Models;
+using BookRentalSystem.DataAccess.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace BookRentalSystem.DataAccess.Data
 {
@@ -12,32 +12,44 @@ namespace BookRentalSystem.DataAccess.Data
         public static async Task SeedAsync(IServiceProvider services)
         {
             var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-            var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
-            string superAdminEmail = "superadmin@example.com";
-            string superAdminPassword = "SuperAdmin123!";
-            string roleName = Role.SuperAdmin;
 
-            if (!await roleManager.RoleExistsAsync(roleName))
+            var existingSuperAdmins = await userManager.GetUsersInRoleAsync(Role.SuperAdmin);
+            if (existingSuperAdmins.Count > 0)
             {
-                await roleManager.CreateAsync(new IdentityRole(roleName));
+                return;
             }
 
-            var superAdminUser = await userManager.FindByEmailAsync(superAdminEmail);
+            var configuration = services.GetRequiredService<IConfiguration>();
+            var superAdminEmail = configuration["SuperAdmin:Email"];
+            var superAdminPassword = configuration["SuperAdmin:Password"];
 
-            if (superAdminUser == null)
+            if (string.IsNullOrWhiteSpace(superAdminEmail) || string.IsNullOrWhiteSpace(superAdminPassword))
             {
-                superAdminUser = new IdentityUser
-                {
-                    UserName = superAdminEmail,
-                    Email = superAdminEmail,
-                    EmailConfirmed = true
-                };
-                var result = await userManager.CreateAsync(superAdminUser, superAdminPassword);
-                if (!result.Succeeded)
-                {
-                    throw new Exception($"Failed to create super admin user: {string.Join(", ", result.Errors.Select(e => e.Description))}");
-                }
-                await userManager.AddToRoleAsync(superAdminUser, roleName);
+                throw new InvalidOperationException("Super admin email or password is missing.");
+            }
+
+            if (await userManager.FindByEmailAsync(superAdminEmail) != null)
+            {
+                throw new InvalidOperationException("Super admin email is already in use.");
+            }
+
+            var superAdminUser = new IdentityUser
+            {
+                UserName = superAdminEmail,
+                Email = superAdminEmail,
+                EmailConfirmed = true
+            };
+
+            var result = await userManager.CreateAsync(superAdminUser, superAdminPassword);
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException("Failed to create the super admin.");
+            }
+
+            var roleResult = await userManager.AddToRoleAsync(superAdminUser, Role.SuperAdmin);
+            if (!roleResult.Succeeded)
+            {
+                throw new InvalidOperationException("Failed to assign the SuperAdmin role.");
             }
         }
     }

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace BookRentalSystem.Business.Services
 {
-    public class BookService(IBookRepository _bookRepository, IMapper _mapper) : IBookService
+    public class BookService(IBookRepository _bookRepository, IUnitOfWork _unitOfWork, IMapper _mapper) : IBookService
     {
         public async Task<BookResponseDto> AddBookAsync(CreateBookDto createBookDto)
         {
@@ -21,7 +21,7 @@ namespace BookRentalSystem.Business.Services
 
             var book = _mapper.Map<Book>(createBookDto);
             await _bookRepository.AddAsync(book);
-            await _bookRepository.SaveChangesAsync();
+            await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<BookResponseDto>(book);
         }
