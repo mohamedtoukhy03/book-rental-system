@@ -1,6 +1,6 @@
 using BookRentalSystem.Business.DTOs;
 using BookRentalSystem.Business.Services;
-using BookRentalSystem.DataAccess.Models;
+using BookRentalSystem.Presentation.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,7 +25,7 @@ namespace BookRentalSystem.Presentation.Controllers
         }
 
         [HttpPost("register-admin")]
-        [Authorize(Roles = Role.SuperAdmin)]
+        [Authorize(Policy = Policies.SuperAdminOnly)]
         public async Task<ActionResult<UserResponseDto>> RegisterAdmin([FromBody] RegisterUserDto registerUserDto)
         {
             var result = await authenticationService.RegisterAdminAsync(registerUserDto);

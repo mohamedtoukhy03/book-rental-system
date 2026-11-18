@@ -9,7 +9,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BookRentalSystem.Presentation.Middlewares
+namespace BookRentalSystem.Presentation.ExceptionHandlers
 {
     public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
     {

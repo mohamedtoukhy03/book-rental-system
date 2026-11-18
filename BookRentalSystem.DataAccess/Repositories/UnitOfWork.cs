@@ -1,6 +1,5 @@
 using BookRentalSystem.DataAccess.Data;
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Threading.Tasks;
 
 namespace BookRentalSystem.DataAccess.Repositories
 {

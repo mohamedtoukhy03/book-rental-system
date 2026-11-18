@@ -1,6 +1,6 @@
 using BookRentalSystem.Business.DTOs;
 using BookRentalSystem.Business.Services;
-using BookRentalSystem.DataAccess.Models;
+using BookRentalSystem.Presentation.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,7 +8,7 @@ namespace BookRentalSystem.Presentation.Controllers.Admin
 {
     [ApiController]
     [Route("api/admin/books")]
-    [Authorize(Roles = $"{Role.Admin},{Role.SuperAdmin}")]
+    [Authorize(Policy = Policies.AdminOnly)]
     public class AdminBookController(IBookService bookService) : ControllerBase
     {
         [HttpPost]

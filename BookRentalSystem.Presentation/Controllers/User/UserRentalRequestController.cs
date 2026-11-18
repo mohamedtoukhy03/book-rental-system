@@ -1,6 +1,6 @@
 using BookRentalSystem.Business.DTOs;
 using BookRentalSystem.Business.Services;
-using BookRentalSystem.DataAccess.Models;
+using BookRentalSystem.Presentation.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -11,7 +11,7 @@ namespace BookRentalSystem.Presentation.Controllers.User
 {
     [ApiController]
     [Route("api/user/rental-requests")]
-    [Authorize(Roles = Role.User)]
+    [Authorize(Policy = Policies.UserOnly)]
     public class UserRentalRequestController(IRentalRequestService rentalRequestService) : ControllerBase
     {
         [HttpPost]
