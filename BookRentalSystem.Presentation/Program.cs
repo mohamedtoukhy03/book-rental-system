@@ -1,14 +1,19 @@
 using BookRentalSystem.Business;
 using BookRentalSystem.DataAccess;
+using BookRentalSystem.Presentation.ExceptionHandlers;
 using BookRentalSystem.Presentation.Extensions;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
+
 builder.Services
     .AddDataAccess(builder.Configuration)
     .AddBusiness()
-    .AddPresentation()
+    .AddOpenApi()
+    .AddExceptionHandler<GlobalExceptionHandler>()
+    .AddProblemDetails()
     .AddJwtAuthentication(builder.Configuration)
     .AddAuthorizationPolicies();
 
