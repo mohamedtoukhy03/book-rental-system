@@ -1,7 +1,7 @@
 using BookRentalSystem.Business;
 using BookRentalSystem.DataAccess;
-using BookRentalSystem.Presentation.ExceptionHandlers;
 using BookRentalSystem.Presentation.Extensions;
+using BookRentalSystem.Presentation.Handlers;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);

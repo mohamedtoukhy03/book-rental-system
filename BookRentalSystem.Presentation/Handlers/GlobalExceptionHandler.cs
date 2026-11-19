@@ -1,15 +1,11 @@
 using BookRentalSystem.Business.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Npgsql;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace BookRentalSystem.Presentation.ExceptionHandlers
+
+namespace BookRentalSystem.Presentation.Handlers
 {
     public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
     {
